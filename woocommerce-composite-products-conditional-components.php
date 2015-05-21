@@ -56,6 +56,46 @@ class WC_CP_Scenario_Action_Conditional_Components {
 		add_filter( 'woocommerce_composite_process_scenario_data', __CLASS__ . '::actions_save', 10, 5 );
 
 		// Validation
+		add_filter( 'woocommerce_composite_validation_component_is_mandatory', __CLASS__ . '::validate', 10, 6 );
+	}
+
+	/**
+	 * Οverride notice for empty selection when component is hidden.
+	 *
+	 * @param  boolean $is_mandatory
+	 * @param  string  $component_id
+	 * @param  array   $validation_data
+	 * @param  array   $common_scenarios
+	 * @param  array   $scenario_data
+	 * @param  string  $product_id
+	 * @return boolean
+	 */
+	public static function validate( $is_mandatory, $component_id, $validation_data, $common_scenarios, $scenario_data, $product_id ) {
+
+		global $woocommerce_composite_products;
+
+		$conditional_components_scenarios = $woocommerce_composite_products->api->filter_scenarios_by_type( $common_scenarios, 'conditional_components', $scenario_data );
+
+		if ( $conditional_components_scenarios ) {
+
+			if ( ! empty( $scenario_data[ 'scenario_settings' ][ 'conditional_components' ] ) ) {
+
+				$conditional_components = $scenario_data[ 'scenario_settings' ][ 'conditional_components' ];
+
+				foreach ( $conditional_components as $scenario_id => $hidden_components ) {
+
+					if ( in_array( $scenario_id, $conditional_components_scenarios ) ) {
+
+						if ( ! empty( $hidden_components ) && in_array( $component_id, $hidden_components ) ) {
+							$is_mandatory = false;
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		return $is_mandatory;
 	}
 
 	/**
@@ -69,7 +109,10 @@ class WC_CP_Scenario_Action_Conditional_Components {
 	 */
 	public static function scenario_data( $scenario_data, $composite_data, $scenario_meta, $composite_id ) {
 
-		if ( ! empty( $scenario_meta ) ) {
+		$composite = WC_CP_Core_Compatibility::wc_get_product( $composite_id );
+		$layout    = $composite->get_composite_layout_style();
+
+		if ( ! empty( $scenario_meta ) && $layout === 'paged' ) {
 
 			$hidden_components_settings = array();
 
@@ -104,9 +147,20 @@ class WC_CP_Scenario_Action_Conditional_Components {
 	 */
 	public static function actions_save( $scenario_meta, $scenario_post_data, $scenario_id, $composite_meta, $composite_id ) {
 
+		global $woocommerce_composite_products;
+
+		$composite = WC_CP_Core_Compatibility::wc_get_product( $composite_id );
+		$layout    = $composite->get_composite_layout_style();
+
 		// Save active state
 		if ( ! empty( $scenario_post_data[ 'scenario_actions' ][ 'conditional_components' ][ 'is_active' ] ) ) {
+
 			$scenario_meta[ 'scenario_actions' ][ 'conditional_components' ][ 'is_active' ] = 'yes';
+
+			if ( $layout !== 'paged' ) {
+				$woocommerce_composite_products->admin->add_error( __( 'The "Hide components" Scenario Action is only compatible with the Stepped layout.', 'woocommerce-composite-products-conditional-components' ) );
+			}
+
 		} else {
 			$scenario_meta[ 'scenario_actions' ][ 'conditional_components' ][ 'is_active' ] = 'no';
 		}
@@ -177,7 +231,7 @@ class WC_CP_Scenario_Action_Conditional_Components {
 		<div class="scenario_action_conditional_components_group" >
 			<div class="form-field toggle_conditional_components">
 				<label for="scenario_action_conditional_components_<?php echo $id; ?>">
-					<?php echo __( 'Hide components', 'woocommerce-composite-products' ); ?>
+					<?php echo __( 'Hide components', 'woocommerce-composite-products-conditional-components' ); ?>
 					<img class="help_tip" data-tip="<?php echo __( 'Hide one or more Components when this Scenario is active.', 'woocommerce-composite-products-conditional-components' ); ?>" src="<?php echo WC()->plugin_url(); ?>/assets/images/help.png" />
 				</label>
 				<input type="checkbox" class="checkbox" <?php echo ( $hide_components === 'yes' ? ' checked="checked"' : '' ); ?> name="bto_scenario_data[<?php echo $id; ?>][scenario_actions][conditional_components][is_active]" <?php echo ( $hide_components === 'yes' ? ' value="1"' : '' ); ?> />

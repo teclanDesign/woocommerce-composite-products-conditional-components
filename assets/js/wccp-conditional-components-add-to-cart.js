@@ -29,31 +29,35 @@
 
 						var script = this;
 
-						this.composite.$components
+						if ( this.composite.composite_layout === 'paged' ) {
 
-							.on( 'wc-composite-fire-scenario-actions', function() {
+							this.composite.$composite_form.children( '.component, .multistep' )
 
-								var step_id = $( this ).data( 'item_id' );
+								.on( 'wc-composite-fire-scenario-actions', function() {
 
-								script.set_hide_status( step_id );
+									var step_id = $( this ).data( 'item_id' );
 
-							} )
+									script.set_hide_status( step_id );
 
-							.on( 'wc-composite-set-active-component', function() {
+								} )
 
-								var step_id = $( this ).data( 'item_id' );
+								.on( 'wc-composite-set-active-component', function() {
 
-								script.reset_hide_status();
+									var step_id = $( this ).data( 'item_id' );
 
-							} )
+									script.reset_hide_status();
 
-							.on( 'wc-composite-ui-updated', function() {
+								} )
 
-								var step_id = $( this ).data( 'item_id' );
+								.on( 'wc-composite-ui-updated', function() {
 
-								script.update_ui( step_id );
+									var step_id = $( this ).data( 'item_id' );
 
-							} )
+									script.update_ui( step_id );
+
+								} );
+
+						}
 
 					},
 
@@ -168,101 +172,102 @@
 						var composite   = this.composite;
 						var firing_step = composite.get_step( firing_step_id );
 
-						if ( composite.composite_layout === 'paged' || composite.composite_layout === 'progressive' ) {
+						// Get active scenarios filtered by action = 'conditional_components'
+						var active_scenarios = composite.get_active_scenarios_by_type( 'conditional_components' ).incl_current;
 
-							// Get active scenarios filtered by action = 'conditional_components'
-							var active_scenarios = composite.get_active_scenarios_by_type( 'conditional_components' ).incl_current;
+						if ( wc_composite_params.script_debug === 'yes' ) {
+							console.log( '\nUpdating hidden components...' );
+						}
 
-							if ( wc_composite_params.script_debug === 'yes' ) {
-								console.log( '\nUpdating hidden components...' );
-							}
+						if ( wc_composite_params.script_debug === 'yes' ) {
+							console.log( '\nActive "Hide Components" Scenarios: ' + active_scenarios.toString() );
+						}
 
-							if ( wc_composite_params.script_debug === 'yes' ) {
-								console.log( '\nActive "Hide Components" Scenarios: ' + active_scenarios.toString() );
-							}
+						// Get conditional components data
+						var conditional_components = composite.get_scenario_data().scenario_settings.conditional_components;
+						var hide_components        = [];
 
-							// Get conditional components data
-							var conditional_components = composite.get_scenario_data().scenario_settings.conditional_components;
-							var hide_components        = [];
+						// Reset hide status
+						$.each( composite.composite_components, function( index, component ) {
+							component.set_hidden( false );
+						} );
 
-							// Reset hide status
-							$.each( composite.composite_components, function( index, component ) {
-								component.set_hidden( false );
+						// Prepare component hide data from active scenarios
+						if ( active_scenarios.length > 0 ) {
+
+							// Set hide status
+							$.each( conditional_components, function( scenario_id, hidden_components ) {
+
+								if ( $.inArray( scenario_id.toString(), active_scenarios ) > -1 ) {
+
+									$.each( composite.composite_components, function( index, component ) {
+
+										if ( $.inArray( component.component_id.toString(), hidden_components ) > -1 ) {
+
+											component.set_hidden( true );
+
+											hide_components.push( component.component_id );
+										}
+
+									} );
+								}
+
 							} );
+						}
 
-							// Prepare component hide data from active scenarios
-							if ( active_scenarios.length > 0 ) {
-
-								// Set hide status
-								$.each( conditional_components, function( scenario_id, hidden_components ) {
-
-									if ( $.inArray( scenario_id.toString(), active_scenarios ) > -1 ) {
-
-										$.each( composite.composite_components, function( index, component ) {
-
-											if ( $.inArray( component.component_id.toString(), hidden_components ) > -1 ) {
-
-												component.set_hidden( true );
-
-												hide_components.push( component.component_id );
-											}
-
-										} );
-									}
-
-								} );
-							}
-
-							if ( wc_composite_params.script_debug === 'yes' ) {
-								console.log( '\nHidden components: ' + hide_components.toString() );
-							}
+						if ( wc_composite_params.script_debug === 'yes' ) {
+							console.log( '\nHidden components: ' + hide_components.toString() );
 						}
 
 					},
 
 					update_ui: function( firing_step_id ) {
 
-						var composite   = this.composite;
-						var hide_count  = 0;
-						var firing_step = composite.get_step( firing_step_id );
+						var composite             = this.composite;
+						var hide_count            = 0;
+						var firing_step           = composite.get_step( firing_step_id );
+						var summary_columns       = composite.$composite_summary.data( 'columns' );
+
+						var summary_element_class = '';
+						var loop                  = 1;
 
 						$.each( composite.composite_steps, function( index, step ) {
 
-							// Only allowed to make changes to subsequent steps
-							if ( index > firing_step.step_index ) {
+							if ( step.is_component() && step.get_component().is_hidden() ) {
 
-								if ( step.is_component() ) {
+								// Pagination
+								composite.$composite_pagination.find( '.pagination_element_' + step.step_id ).hide();
 
-									if ( step.get_component().is_hidden() ) {
+								// Summary (widget will be cloned)
+								composite.$composite_summary.find( '.summary_element_' + step.step_id ).hide();
 
-										// Pagination
-										composite.$composite_pagination.find( '.pagination_element_' + step.step_id ).hide();
+								hide_count++;
 
-										// Summary (widget will be cloned)
-										composite.$composite_summary.find( '.summary_element_' + step.step_id ).hide();
+							} else {
+								// Pagination
+								composite.$composite_pagination.find( '.pagination_element_' + step.step_id + ' .element_index' ).html( index - hide_count + 1 );
+								composite.$composite_pagination.find( '.pagination_element_' + step.step_id ).show();
 
-										hide_count++;
-
-									} else {
-										// Pagination
-										composite.$composite_pagination.find( '.pagination_element_' + step.step_id + ' .element_index' ).html( index - hide_count + 1 );
-										composite.$composite_pagination.find( '.pagination_element_' + step.step_id ).show();
-
-										// Summary (widget will be cloned)
-										composite.$composite_summary.find( '.summary_element_' + step.step_id + ' .step_index' ).html( index - hide_count + 1 );
-										composite.$composite_summary.find( '.summary_element_' + step.step_id ).show();
-									}
-
-								} else {
-									// Pagination
-									composite.$composite_pagination.find( '.pagination_element_' + step.step_id + ' .element_index' ).html( index - hide_count + 1 );
-									composite.$composite_pagination.find( '.pagination_element_' + step.step_id ).show();
-
-									// Summary (widget will be cloned)
-									composite.$composite_summary.find( '.summary_element_' + step.step_id + ' .step_index' ).html( index - hide_count + 1 );
-									composite.$composite_summary.find( '.summary_element_' + step.step_id ).show();
-								}
+								// Summary (widget will be cloned)
+								composite.$composite_summary.find( '.summary_element_' + step.step_id + ' .step_index' ).html( index - hide_count + 1 );
+								composite.$composite_summary.find( '.summary_element_' + step.step_id ).show();
 							}
+
+							// Update Summary markup
+
+							summary_element_class = '';
+							loop = index - hide_count + 1;
+
+							if ( ( ( loop - 1 ) % summary_columns ) == 0 || summary_columns == 1 ) {
+								summary_element_class = 'first';
+							}
+
+							if ( loop % summary_columns == 0 ) {
+								summary_element_class = 'last';
+							}
+
+							composite.$composite_summary.find( '.summary_element_' + step.step_id ).removeClass( 'first last' ).addClass( summary_element_class );
+
 						} );
 
 					}
