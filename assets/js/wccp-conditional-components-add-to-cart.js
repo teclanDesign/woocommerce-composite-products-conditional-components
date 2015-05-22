@@ -253,7 +253,7 @@
 								composite.$composite_summary.find( '.summary_element_' + step.step_id ).show();
 							}
 
-							// Update Summary markup
+							// Update Summary columns markup
 
 							summary_element_class = '';
 							loop = index - hide_count + 1;

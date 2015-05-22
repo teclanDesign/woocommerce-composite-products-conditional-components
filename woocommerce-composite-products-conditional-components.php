@@ -158,7 +158,7 @@ class WC_CP_Scenario_Action_Conditional_Components {
 			$scenario_meta[ 'scenario_actions' ][ 'conditional_components' ][ 'is_active' ] = 'yes';
 
 			if ( $layout !== 'paged' ) {
-				$woocommerce_composite_products->admin->add_error( __( 'The "Hide components" Scenario Action is only compatible with the Stepped layout.', 'woocommerce-composite-products-conditional-components' ) );
+				$woocommerce_composite_products->admin->add_error( __( 'The "Hide components" Scenario Action is only compatible with the Stepped and Componentized layout options.', 'woocommerce-composite-products-conditional-components' ) );
 			}
 
 		} else {
