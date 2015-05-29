@@ -2,9 +2,9 @@
 
 Contributors: franticpsyx
 Tags: woocommerce, composite, products, conditional, components
-Requires at least: 3.8.0
-Tested up to: 4.2.2
-Stable tag: 1.0.0
+Requires at least: 3.8
+Tested up to: 4.2
+Stable tag: 1.0.1
 WC requires at least: 2.1
 WC tested up to: 2.3
 License: GNU General Public License v3.0
@@ -25,7 +25,3 @@ Conditional Components is a Composite Products plugin that makes it possible to 
 1. Upload the plugin to the **/wp-content/plugins/** directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
 
-== Upgrade Notice ==
-
-= 1.0.0 =
-Initial version.
