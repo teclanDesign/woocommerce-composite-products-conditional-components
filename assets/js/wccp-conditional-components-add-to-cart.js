@@ -125,11 +125,11 @@
 										component.$self.removeClass( 'next' );
 
 										if ( isset( composite.composite_steps[ component_index + 1 ] ) ) {
-											composite.composite_steps[ component_index + 1 ].get_markup().addClass( 'next' );
+											composite.composite_steps[ component_index + 1 ].get_element().addClass( 'next' );
 
-											//if ( wc_composite_params.script_debug === 'yes' ) {
+											if ( wc_composite_params.script_debug === 'yes' ) {
 												console.log( 'Changed next component to ' + composite.composite_steps[ component_index + 1 ].get_title() );
-											//}
+											}
 										}
 									}
 
