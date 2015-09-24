@@ -3,7 +3,7 @@
 * Plugin Name: WooCommerce Composite Products - Conditional Components
 * Plugin URI: http://www.woothemes.com/products/composite-products/
 * Description: Adds a custom "Hide Components" Scenario action that can be used to conditionally hide Composite Components. Requires WooCommerce Composite Products v3.1+.
-* Version: 1.0.1
+* Version: 1.0.2
 * Author: SomewhereWarm
 * Author URI: http://somewherewarm.net/
 * Developer: Manos Psychogyiopoulos
@@ -276,9 +276,9 @@ class WC_CP_Scenario_Action_Conditional_Components {
 			<div class="form-field toggle_conditional_components">
 				<label for="scenario_action_conditional_components_<?php echo $id; ?>">
 					<?php echo __( 'Hide components', 'woocommerce-composite-products-conditional-components' ); ?>
-					<img class="help_tip" data-tip="<?php echo __( 'Hide one or more Components when this Scenario is active.', 'woocommerce-composite-products-conditional-components' ); ?>" src="<?php echo WC()->plugin_url(); ?>/assets/images/help.png" />
 				</label>
 				<input type="checkbox" class="checkbox" <?php echo ( $hide_components === 'yes' ? ' checked="checked"' : '' ); ?> name="bto_scenario_data[<?php echo $id; ?>][scenario_actions][conditional_components][is_active]" <?php echo ( $hide_components === 'yes' ? ' value="1"' : '' ); ?> />
+				<img class="help_tip" data-tip="<?php echo __( 'Hide one or more Components when this Scenario is active.', 'woocommerce-composite-products-conditional-components' ); ?>" src="<?php echo WC()->plugin_url(); ?>/assets/images/help.png" />
 			</div>
 			<div class="action_components" <?php echo ( $hide_components === 'no' ? ' style="display:none;"' : '' ); ?> >
 				<select id="bto_conditional_components_ids_<?php echo $id; ?>" name="bto_scenario_data[<?php echo $id; ?>][scenario_actions][conditional_components][hidden_components][]" style="width: 75%;" class="<?php echo WC_CP_Core_Compatibility::is_wc_version_gte_2_3() ? 'wc-enhanced-select' : 'chosen_select'; ?> conditional_components_ids" multiple="multiple" data-placeholder="<?php echo __( 'Select components&hellip;', 'woocommerce-composite-products-conditional-components' ); ?>"><?php
