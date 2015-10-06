@@ -6,5 +6,5 @@
 2015.05.29 - version 1.0.1
  * Fix - Add missing scenario filters.
 
-2015.06.03 - version 1.0.0
+2015.05.20 - version 1.0.0
  * Initial Release.
