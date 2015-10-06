@@ -1,0 +1,10 @@
+*** WooCommerce Composite Products - Conditional Components ***
+
+2015.09.24 - version 1.0.2
+ * Tweak - Move tooltips after input fields.
+
+2015.05.29 - version 1.0.1
+ * Fix - Add missing scenario filters.
+
+2015.06.03 - version 1.0.0
+ * Initial Release.
