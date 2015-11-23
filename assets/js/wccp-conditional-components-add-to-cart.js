@@ -110,11 +110,13 @@
 
 									var component_options_select = component.$component_options.find( 'select.component_options_select' );
 
-									component.set_optional( true );
-
 									if ( component_options_select.val() !== '' ) {
+										component.$self.addClass( 'resetting' );
 										component_options_select.val( '' ).change();
+										component.$self.removeClass( 'resetting' );
 									}
+
+									component.set_optional( true );
 
 									if ( component.get_step().is_next() ) {
 
@@ -269,6 +271,8 @@
 							composite.$composite_summary.find( '.summary_element_' + step.step_id ).removeClass( 'first last' ).addClass( summary_element_class );
 
 						} );
+
+						composite.update_summary();
 
 					}
 
