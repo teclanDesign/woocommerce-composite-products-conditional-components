@@ -1,5 +1,9 @@
 *** WooCommerce Composite Products - Conditional Components ***
 
+2016.01.09 - version 1.0.3
+ * Important - Composite Products v3.5.1 required.
+ * Fix - Take all Composite steps/components into account when calculating active "Hide Components" scenarios.
+
 2015.09.24 - version 1.0.2
  * Tweak - Move tooltips after input fields.
 

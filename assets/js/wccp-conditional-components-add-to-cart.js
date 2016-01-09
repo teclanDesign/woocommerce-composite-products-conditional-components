@@ -1,3 +1,6 @@
+/* global wc_composite_params */
+/* global wc_cp_composite_scripts */
+
 ;( function ( $, window, document, undefined ) {
 
 	var conditional_component_scripts = {};
@@ -6,7 +9,7 @@
 
 		.on( 'wc-composite-initializing', function() {
 
-			var container_id = $(this).data( 'container_id' );
+			var container_id = $( this ).data( 'container_id' );
 
 			if ( typeof( conditional_component_scripts[ container_id ] ) !== 'undefined' ) {
 				return true;
@@ -34,27 +37,15 @@
 							this.composite.$composite_form.children( '.component, .multistep' )
 
 								.on( 'wc-composite-fire-scenario-actions', function() {
-
-									var step_id = $( this ).data( 'item_id' );
-
-									script.set_hide_status( step_id );
-
+									script.set_hide_status();
 								} )
 
 								.on( 'wc-composite-set-active-component', function() {
-
-									var step_id = $( this ).data( 'item_id' );
-
 									script.reset_hide_status();
-
 								} )
 
 								.on( 'wc-composite-ui-updated', function() {
-
-									var step_id = $( this ).data( 'item_id' );
-
-									script.update_ui( step_id );
-
+									script.update_ui();
 								} );
 
 						}
@@ -130,7 +121,7 @@
 											composite.composite_steps[ component_index + 1 ].get_element().addClass( 'next' );
 
 											if ( wc_composite_params.script_debug === 'yes' ) {
-												console.log( 'Changed next component to ' + composite.composite_steps[ component_index + 1 ].get_title() );
+												log_msg( 'Changed next component to ' + composite.composite_steps[ component_index + 1 ].get_title() );
 											}
 										}
 									}
@@ -153,7 +144,7 @@
 												found_prev = true;
 
 												if ( wc_composite_params.script_debug === 'yes' ) {
-													console.log( 'Changed previous component to ' + composite.composite_components[ i ].get_title() );
+													log_msg( 'Changed previous component to ' + composite.composite_components[ i ].get_title() );
 												}
 											}
 
@@ -169,20 +160,21 @@
 						} );
 					},
 
-					set_hide_status: function( firing_step_id ) {
+					set_hide_status: function() {
 
-						var composite   = this.composite;
-						var firing_step = composite.get_step( firing_step_id );
+						var composite        = this.composite;
 
-						// Get active scenarios filtered by action = 'conditional_components'
-						var active_scenarios = composite.get_active_scenarios_by_type( 'conditional_components' ).incl_current;
+						// Get active scenarios filtered by 'conditional_components' action
+						var last_step_id     = composite.composite_steps[ composite.composite_steps.length - 1 ].step_id;
+						var scenarios        = composite.update_active_scenarios( last_step_id, true );
+						var active_scenarios = composite.get_scenarios_by_type( scenarios.incl_current, 'conditional_components' );
 
 						if ( wc_composite_params.script_debug === 'yes' ) {
-							console.log( '\nUpdating hidden components...' );
+							log_msg( '\nUpdating hidden components...' );
 						}
 
 						if ( wc_composite_params.script_debug === 'yes' ) {
-							console.log( '\nActive "Hide Components" Scenarios: ' + active_scenarios.toString() );
+							log_msg( '\nActive "Hide Components" Scenarios: ' + active_scenarios.toString() );
 						}
 
 						// Get conditional components data
@@ -218,16 +210,15 @@
 						}
 
 						if ( wc_composite_params.script_debug === 'yes' ) {
-							console.log( '\nHidden components: ' + hide_components.toString() );
+							log_msg( '\nHidden components: ' + hide_components.toString() );
 						}
 
 					},
 
-					update_ui: function( firing_step_id ) {
+					update_ui: function() {
 
 						var composite             = this.composite;
 						var hide_count            = 0;
-						var firing_step           = composite.get_step( firing_step_id );
 						var summary_columns       = composite.$composite_summary.data( 'columns' );
 
 						var summary_element_class = '';
@@ -260,11 +251,11 @@
 							summary_element_class = '';
 							loop = index - hide_count + 1;
 
-							if ( ( ( loop - 1 ) % summary_columns ) == 0 || summary_columns == 1 ) {
+							if ( ( ( loop - 1 ) % summary_columns ) === 0 || summary_columns === 1 ) {
 								summary_element_class = 'first';
 							}
 
-							if ( loop % summary_columns == 0 ) {
+							if ( loop % summary_columns === 0 ) {
 								summary_element_class = 'last';
 							}
 
@@ -290,6 +281,13 @@
 			}
 
 			return true;
+		}
+
+		function log_msg( message ) {
+
+			if ( window.console ) {
+				window.console.log( message );
+			}
 		}
 
 } ) ( jQuery, window, document );

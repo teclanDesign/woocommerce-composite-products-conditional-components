@@ -3,7 +3,7 @@
 * Plugin Name: WooCommerce Composite Products - Conditional Components
 * Plugin URI: http://www.woothemes.com/products/composite-products/
 * Description: Adds a custom "Hide Components" Scenario action that can be used to conditionally hide Composite Components. Requires WooCommerce Composite Products v3.1+.
-* Version: 1.0.2
+* Version: 1.0.3
 * Author: SomewhereWarm
 * Author URI: http://somewherewarm.net/
 * Developer: Manos Psychogyiopoulos
@@ -27,7 +27,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class WC_CP_Scenario_Action_Conditional_Components {
 
-	public static $version = '1.0.1';
+	public static $version        = '1.0.3';
+	public static $req_cp_version = '3.5.1';
 
 	public static function plugin_url() {
 		return plugins_url( basename( plugin_dir_path(__FILE__) ), basename( __FILE__ ) );
@@ -38,26 +39,48 @@ class WC_CP_Scenario_Action_Conditional_Components {
 	}
 
 	public static function init() {
+		// Load plugin.
+		add_action( 'plugins_loaded', __CLASS__ . '::load' );
+	}
 
-		// Admin script
+	public static function load() {
+
+		global $woocommerce_composite_products;
+
+		if ( ! empty( $woocommerce_composite_products ) && version_compare( $woocommerce_composite_products->version, self::$req_cp_version ) < 0 ) {
+			add_action( 'admin_notices', __CLASS__ . '::cp_check_admin_notice' );
+			return false;
+		}
+
+		// Admin script.
 		add_filter( 'woocommerce_composite_script_dependencies', __CLASS__ . '::add_to_cart_script' );
 
-		// Front-end script (where the magic happens)
+		// Front-end script (where the magic happens).
 		add_action( 'admin_enqueue_scripts', __CLASS__ . '::admin_scripts' );
 
-		// Add qty data in scenarios
+		// Add qty data in scenarios.
 		add_filter( 'woocommerce_composite_initial_scenario_data', __CLASS__ . '::initial_scenario_data', 10, 4 );
 		add_filter( 'woocommerce_composite_validation_scenario_data', __CLASS__ . '::validation_scenario_data', 10, 4 );
 		add_filter( 'woocommerce_composite_component_current_scenario_data', __CLASS__ . '::current_scenario_data', 10, 5 );
 
-		// Add 'Hide Components' action in Scenarios
+		// Add 'Hide Components' action in Scenarios.
 		add_action( 'woocommerce_composite_scenario_admin_actions_html', __CLASS__ . '::actions_config', 15, 4 );
 
-		// Save 'Hide Components' action settings
+		// Save 'Hide Components' action settings.
 		add_filter( 'woocommerce_composite_process_scenario_data', __CLASS__ . '::actions_save', 10, 5 );
 
-		// Validation
+		// Validation.
 		add_filter( 'woocommerce_composite_validation_component_is_mandatory', __CLASS__ . '::validate', 10, 6 );
+	}
+
+	/**
+	 * Displays a warning message if CP version check fails.
+	 *
+	 * @return string
+	 */
+	public static function cp_check_admin_notice() {
+
+		echo '<div class="error"><p>' . sprintf( __( 'The installed version of <strong>WooCommerce Composite Products - Conditional Components</strong> requires Composite Products version %s or higher. Please update WooCommerce Composite Products.', 'woocommerce-composite-products-conditional-components' ), self::$req_cp_version ) . '</p></div>';
 	}
 
 	/**
@@ -73,9 +96,7 @@ class WC_CP_Scenario_Action_Conditional_Components {
 	 */
 	public static function validate( $is_mandatory, $component_id, $validation_data, $common_scenarios, $scenario_data, $product_id ) {
 
-		global $woocommerce_composite_products;
-
-		$conditional_components_scenarios = $woocommerce_composite_products->api->filter_scenarios_by_type( $common_scenarios, 'conditional_components', $scenario_data );
+		$conditional_components_scenarios = WC_CP_Scenarios::filter_scenarios_by_type( $common_scenarios, 'conditional_components', $scenario_data );
 
 		if ( $conditional_components_scenarios ) {
 
