@@ -172,7 +172,7 @@ class WC_CP_Scenario_Action_Conditional_Components {
 
 		if ( is_numeric( $composite ) ) {
 			$composite_id = absint( $composite );
-			$composite    = WC_CP_Core_Compatibility::wc_get_product( $composite_id );
+			$composite    = wc_get_product( $composite_id );
 		}
 
 		$layout = $composite->get_composite_layout_style();
@@ -214,7 +214,7 @@ class WC_CP_Scenario_Action_Conditional_Components {
 
 		global $woocommerce_composite_products;
 
-		$composite = WC_CP_Core_Compatibility::wc_get_product( $composite_id );
+		$composite = wc_get_product( $composite_id );
 		$layout    = $composite->get_composite_layout_style();
 
 		// Save active state
