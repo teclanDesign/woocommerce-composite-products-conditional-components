@@ -3,7 +3,7 @@
 * Plugin Name: WooCommerce Composite Products - Conditional Components
 * Plugin URI: http://www.woothemes.com/products/composite-products/
 * Description: Adds a custom "Hide Components" Scenario action that can be used to conditionally hide Composite Components. Requires WooCommerce Composite Products v3.1+.
-* Version: 1.0.3
+* Version: 1.1.0
 * Author: SomewhereWarm
 * Author URI: http://somewherewarm.net/
 * Developer: Manos Psychogyiopoulos
@@ -13,22 +13,22 @@
 * Domain Path: /languages/
 *
 * Requires at least: 3.8
-* Tested up to: 4.3
+* Tested up to: 4.4
 *
 * Copyright: © 2009-2015 Manos Psychogyiopoulos.
 * License: GNU General Public License v3.0
 * License URI: http://www.gnu.org/licenses/gpl-3.0.html
 */
 
-// Exit if accessed directly
+// Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 class WC_CP_Scenario_Action_Conditional_Components {
 
-	public static $version        = '1.0.3';
-	public static $req_cp_version = '3.5.1';
+	public static $version        = '1.1.0';
+	public static $req_cp_version = '3.6.0';
 
 	public static function plugin_url() {
 		return plugins_url( basename( plugin_dir_path(__FILE__) ), basename( __FILE__ ) );
@@ -201,7 +201,7 @@ class WC_CP_Scenario_Action_Conditional_Components {
 	}
 
 	/**
-	 * Save conditional components settings in scenarios
+	 * Save conditional components settings in scenarios.
 	 *
 	 * @param  array  $scenario_meta
 	 * @param  array  $scenario_post_data
@@ -239,7 +239,7 @@ class WC_CP_Scenario_Action_Conditional_Components {
 	}
 
 	/**
-	 * Front-end script
+	 * Front-end script.
 	 *
 	 * @param array $dependencies
 	 */
@@ -283,7 +283,7 @@ class WC_CP_Scenario_Action_Conditional_Components {
 	}
 
 	/**
-	 * Add 'Hide Components' action in Scenarios
+	 * Add 'Hide Components' action in Scenarios.
 	 *
 	 * @return void
 	 */

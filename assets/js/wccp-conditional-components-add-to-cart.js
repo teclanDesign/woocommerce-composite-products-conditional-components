@@ -17,257 +17,9 @@
 				return false;
 			} else {
 
-				conditional_component_scripts[ container_id ] = {
+				var composite = wc_cp_composite_scripts[ container_id ];
 
-					composite: wc_cp_composite_scripts[ container_id ],
-					script:    this,
-
-					init: function() {
-
-						this.bind_event_handlers();
-						this.init_hide_status();
-					},
-
-					bind_event_handlers: function() {
-
-						var script = this;
-
-						if ( this.composite.composite_layout === 'paged' ) {
-
-							this.composite.$composite_form.children( '.component, .multistep' )
-
-								.on( 'wc-composite-fire-scenario-actions', function() {
-									script.set_hide_status();
-								} )
-
-								.on( 'wc-composite-set-active-component', function() {
-									script.reset_hide_status();
-								} )
-
-								.on( 'wc-composite-ui-updated', function() {
-									script.update_ui();
-								} );
-
-						}
-
-					},
-
-					reset_hide_status: function() {
-
-						var composite = this.composite;
-
-						// Reset hide status
-						composite.$composite_form.find( '.component.o-next' ).removeClass( 'o-next' );
-						composite.$composite_form.find( '.component.o-prev' ).removeClass( 'o-prev' );
-
-						$.each( composite.composite_components, function( index, component ) {
-							component.set_hidden( false );
-						} );
-
-					},
-
-					init_hide_status: function() {
-
-						var composite = this.composite;
-
-						$.each( composite.composite_components, function( index, component ) {
-
-							component._is_hidden = false;
-
-							component.is_hidden = function() {
-
-								return component._is_hidden;
-							};
-
-							component.set_hidden = function( hidden ) {
-
-								var component_index = parseInt( component.component_index );
-
-								component._is_hidden = hidden;
-
-								if ( ! hidden ) {
-
-									if ( component.$self.hasClass( 'o-next' ) ) {
-										composite.$composite_form.find( '.component.next' ).removeClass( 'next' );
-										component.$self.removeClass( 'o-next' ).addClass( 'next' );
-									}
-
-									if ( component.$self.hasClass( 'o-prev' ) ) {
-										composite.$composite_form.find( '.component.prev' ).removeClass( 'prev' );
-										component.$self.removeClass( 'o-prev' ).addClass( 'prev' );
-									}
-
-								} else {
-
-									var component_options_select = component.$component_options.find( 'select.component_options_select' );
-
-									if ( component_options_select.val() !== '' ) {
-										component.$self.addClass( 'resetting' );
-										component_options_select.val( '' ).change();
-										component.$self.removeClass( 'resetting' );
-									}
-
-									component.set_optional( true );
-
-									if ( component.get_step().is_next() ) {
-
-										if ( composite.$composite_form.find( '.component.o-next' ).length === 0 ) {
-											component.$self.addClass( 'o-next' );
-										}
-
-										component.$self.removeClass( 'next' );
-
-										if ( isset( composite.composite_steps[ component_index + 1 ] ) ) {
-											composite.composite_steps[ component_index + 1 ].get_element().addClass( 'next' );
-
-											if ( wc_composite_params.script_debug === 'yes' ) {
-												log_msg( 'Changed next component to ' + composite.composite_steps[ component_index + 1 ].get_title() );
-											}
-										}
-									}
-
-									if ( component.get_step().is_previous() ) {
-
-										if ( composite.$composite_form.find( '.component.o-prev' ).length === 0 ) {
-											component.$self.addClass( 'o-prev' );
-										}
-
-										component.$self.removeClass( 'prev' );
-
-										var found_prev = false;
-										var i          = index - 1;
-
-										while ( ! found_prev && i >= 0 ) {
-
-											if ( ! composite.composite_components[ i ].is_hidden() ) {
-												composite.composite_components[ i ].$self.addClass( 'prev' );
-												found_prev = true;
-
-												if ( wc_composite_params.script_debug === 'yes' ) {
-													log_msg( 'Changed previous component to ' + composite.composite_components[ i ].get_title() );
-												}
-											}
-
-											i--;
-										}
-									}
-								}
-
-
-							};
-
-
-						} );
-					},
-
-					set_hide_status: function() {
-
-						var composite        = this.composite;
-
-						// Get active scenarios filtered by 'conditional_components' action
-						var last_step_id     = composite.composite_steps[ composite.composite_steps.length - 1 ].step_id;
-						var scenarios        = composite.update_active_scenarios( last_step_id, true );
-						var active_scenarios = composite.get_scenarios_by_type( scenarios.incl_current, 'conditional_components' );
-
-						if ( wc_composite_params.script_debug === 'yes' ) {
-							log_msg( '\nUpdating hidden components...' );
-						}
-
-						if ( wc_composite_params.script_debug === 'yes' ) {
-							log_msg( '\nActive "Hide Components" Scenarios: ' + active_scenarios.toString() );
-						}
-
-						// Get conditional components data
-						var conditional_components = composite.get_scenario_data().scenario_settings.conditional_components;
-						var hide_components        = [];
-
-						// Reset hide status
-						$.each( composite.composite_components, function( index, component ) {
-							component.set_hidden( false );
-						} );
-
-						// Prepare component hide data from active scenarios
-						if ( active_scenarios.length > 0 ) {
-
-							// Set hide status
-							$.each( conditional_components, function( scenario_id, hidden_components ) {
-
-								if ( $.inArray( scenario_id.toString(), active_scenarios ) > -1 ) {
-
-									$.each( composite.composite_components, function( index, component ) {
-
-										if ( $.inArray( component.component_id.toString(), hidden_components ) > -1 ) {
-
-											component.set_hidden( true );
-
-											hide_components.push( component.component_id );
-										}
-
-									} );
-								}
-
-							} );
-						}
-
-						if ( wc_composite_params.script_debug === 'yes' ) {
-							log_msg( '\nHidden components: ' + hide_components.toString() );
-						}
-
-					},
-
-					update_ui: function() {
-
-						var composite             = this.composite;
-						var hide_count            = 0;
-						var summary_columns       = composite.$composite_summary.data( 'columns' );
-
-						var summary_element_class = '';
-						var loop                  = 1;
-
-						$.each( composite.composite_steps, function( index, step ) {
-
-							if ( step.is_component() && step.get_component().is_hidden() ) {
-
-								// Pagination
-								composite.$composite_pagination.find( '.pagination_element_' + step.step_id ).hide();
-
-								// Summary (widget will be cloned)
-								composite.$composite_summary.find( '.summary_element_' + step.step_id ).hide();
-
-								hide_count++;
-
-							} else {
-								// Pagination
-								composite.$composite_pagination.find( '.pagination_element_' + step.step_id + ' .element_index' ).html( index - hide_count + 1 );
-								composite.$composite_pagination.find( '.pagination_element_' + step.step_id ).show();
-
-								// Summary (widget will be cloned)
-								composite.$composite_summary.find( '.summary_element_' + step.step_id + ' .step_index' ).html( index - hide_count + 1 );
-								composite.$composite_summary.find( '.summary_element_' + step.step_id ).show();
-							}
-
-							// Update Summary columns markup
-
-							summary_element_class = '';
-							loop = index - hide_count + 1;
-
-							if ( ( ( loop - 1 ) % summary_columns ) === 0 || summary_columns === 1 ) {
-								summary_element_class = 'first';
-							}
-
-							if ( loop % summary_columns === 0 ) {
-								summary_element_class = 'last';
-							}
-
-							composite.$composite_summary.find( '.summary_element_' + step.step_id ).removeClass( 'first last' ).addClass( summary_element_class );
-
-						} );
-
-						composite.update_summary();
-
-					}
-
-				};
+				conditional_component_scripts[ container_id ] = new WC_CP_Conditional_Components( composite );
 
 				conditional_component_scripts[ container_id ].init();
 			}
@@ -283,11 +35,448 @@
 			return true;
 		}
 
-		function log_msg( message ) {
+		function WC_CP_Conditional_Components ( composite ) {
 
-			if ( window.console ) {
-				window.console.log( message );
-			}
+			var script = this;
+
+			this.init = function() {
+
+				/*
+				 * Init conditional visibility models.
+				 */
+				composite.actions.add_action( 'initialize_composite', function() {
+					script.init_models();
+				}, 21, this );
+
+				/*
+				 * Setup filters.
+				 */
+				composite.actions.add_action( 'initialize_composite', function() {
+					script.add_filters();
+				}, 21, this );
+
+				/*
+				 * Init conditional visibility views.
+				 */
+				composite.actions.add_action( 'initialize_composite', function() {
+					script.init_views();
+				}, 51, this );
+			};
+
+			/**
+			 * Init visibility models.
+			 */
+			this.init_models = function() {
+
+				var Step_Visibility_Model = function( component, opts ) {
+
+					var self = component;
+
+					/**
+					 * Controls the visibility state of a component.
+					 */
+					var Model = Backbone.Model.extend( {
+
+						initialize: function() {
+
+							var params = {
+								is_hidden: false,
+							};
+
+							this.set( params );
+
+							if ( self.is_component() ) {
+
+								/**
+								 * Update model state when the active scenarios change.
+								 */
+								composite.actions.add_action( 'active_scenarios_changed', this.update_visibility_state, 15, this );
+
+								/**
+								 * Run 'step_visibility_changed' action.
+								 */
+								this.on( 'change:is_hidden', this.do_action, this );
+							}
+						},
+
+						do_action: function() {
+
+							/**
+							 * Action 'step_visibility_changed':
+							 *
+							 * @hooked Step_Visibility_View::step_visibility_changed_handler - 10
+							 */
+							composite.actions.do_action( 'step_visibility_changed', [ self ] );
+						},
+
+						update_visibility_state: function() {
+
+							var scenarios        = composite.scenarios.get_active_scenarios(),
+								active_scenarios = composite.scenarios.filter_scenarios_by_type( scenarios, 'conditional_components' ),
+								hide_component   = false;
+
+							composite.console_log( 'debug:models', '\nUpdating "' + self.get_title() + '" visibility...' );
+							composite.console_log( 'debug:models', 'Active "Hide Components" Scenarios: ' + active_scenarios.toString() );
+
+							// Get conditional components data.
+							var conditional_components = composite.scenarios.get_scenario_data().scenario_settings.conditional_components;
+
+							// Find if the component is hidden in the active scenarios.
+							if ( active_scenarios.length > 0 ) {
+
+								// Set hide status.
+								$.each( conditional_components, function( scenario_id, hidden_components ) {
+
+									if ( _.contains( active_scenarios, scenario_id.toString() ) ) {
+										if ( _.contains( hidden_components, self.component_id.toString() ) ) {
+											hide_component = true;
+										}
+									}
+								} );
+							}
+
+							composite.console_log( 'debug:models', '\nUpdating \'Step_Visibility_Model\': "' + self.get_title() + '", Attribute: "is_hidden": ' + hide_component.toString() );
+
+							composite.debug_tab_count = composite.debug_tab_count + 2;
+							this.set( { is_hidden: hide_component } );
+							composite.debug_tab_count = composite.debug_tab_count - 2;
+						}
+
+					} );
+
+					var obj = new Model( opts );
+					return obj;
+				};
+
+				/*
+				 * Init visibility models.
+				 */
+				$.each( composite.get_steps(), function( index, component ) {
+					component.step_visibility_model = new Step_Visibility_Model( component );
+				} );
+			};
+
+			/*
+			 * Add filters:
+			 *
+			 * - Step access model state filter.
+			 * - Step validation result filter.
+			 * - Component 'is_optional' method filter.
+			 * - Component validation messages filter.
+			 */
+			this.add_filters = function() {
+
+				composite.filters.add_filter( 'step_is_valid', this.step_is_valid, 10, this );
+				composite.filters.add_filter( 'step_is_locked', this.step_is_locked, 10, this );
+				composite.filters.add_filter( 'component_is_optional', this.component_is_optional, 10, this );
+				composite.filters.add_filter( 'step_validation_messages', this.step_validation_messages, 10, this );
+			};
+
+			/*
+			 * Step validation messages filter.
+			 */
+			this.step_validation_messages = function( messages, context, step ) {
+
+				if ( step.is_component() && step.step_visibility_model.get( 'is_hidden' ) ) {
+					messages = [];
+				}
+
+				return messages;
+			};
+
+			/*
+			 * Step validation result filter.
+			 */
+			this.step_is_valid = function( is_valid, step ) {
+
+				if ( step.is_component() && step.step_visibility_model.get( 'is_hidden' ) ) {
+					is_valid = true;
+				}
+
+				return is_valid;
+			};
+
+			/*
+			 * Step access model state filter.
+			 */
+			this.step_is_locked = function( is_locked, step ) {
+
+				if ( step.is_component() && step.step_visibility_model.get( 'is_hidden' ) ) {
+					is_locked = true;
+				}
+
+				return is_locked;
+			};
+
+			/**
+			 * Component 'is_optional' filter: Hidden components are optional.
+			 */
+			this.component_is_optional = function( is_optional, component ) {
+
+				if ( component.step_visibility_model.get( 'is_hidden' ) ) {
+					is_optional = true;
+				}
+
+				return is_optional;
+			};
+
+			/**
+			 * Init visibility views.
+			 */
+			this.init_views = function() {
+
+				var Step_Visibility_View = function( component, opts ) {
+
+					var self = component;
+
+					var View = Backbone.View.extend( {
+
+						initialize: function() {
+
+							/**
+							 * Change prev/next pointers and visibility to skip hidden components:
+							 *
+							 * - When the visibility model state of a prev/next component changes.
+							 * - When the active step changes and prev/next pointers need to be refreshed.
+							 */
+							composite.actions.add_action( 'step_visibility_changed', this.step_visibility_changed_handler, 10, this );
+							composite.actions.add_action( 'active_step_changed', this.update_pointers, 100, this );
+						},
+
+						step_visibility_changed_handler: function( step ) {
+
+							/**
+							 * Change prev/next component pointers.
+							 */
+							this.update_pointers();
+
+							/**
+							 * Hide prev/next components depending on their visibility model state.
+							 */
+							if ( step.step_index === self.step_index ) {
+								this.update_visibility();
+								this.update_views();
+							}
+
+							/**
+							 * Refresh numeric indexes in component markup.
+							 */
+							this.update_indexes();
+						},
+
+						update_indexes: function() {
+
+							composite.console_log( 'debug:views', '\nRefreshing "' + self.get_title() + '" indexes...' );
+
+							var hidden_count          = 0,
+								summary_columns       = composite.$composite_summary.data( 'columns' ),
+								summary_element_class = '',
+								count                 = 1;
+
+							// Count number of hidden components before this one.
+							hidden_count = _.filter( composite.get_steps(), function( component ) {
+								if ( component.step_visibility_model.get( 'is_hidden' ) && component.step_index < self.step_index ) {
+									return component;
+								}
+							} ).length;
+
+							count = self.step_index - hidden_count + 1;
+
+							if ( ( ( count - 1 ) % summary_columns ) === 0 || summary_columns === 1 ) {
+								summary_element_class = 'first';
+							}
+
+							if ( count % summary_columns === 0 ) {
+								summary_element_class += ' last';
+							}
+
+							// Refresh index in step title.
+							self.$step_title.find( '.step_index' ).html( count );
+
+							// Refresh index in composite pagination element.
+							if ( false !== composite.composite_pagination_view ) {
+								composite.composite_pagination_view.view_elements[ self.step_id ].$pagination_element.find( '.element_index' ).html( count );
+							}
+
+							// Refresh index in composite summary elements.
+							if ( self.is_component() ) {
+								if ( false !== composite.composite_summary_view ) {
+									composite.composite_summary_view.view_elements[ self.step_id ].$summary_element.removeClass( 'first last' ).addClass( summary_element_class );
+									composite.composite_summary_view.view_elements[ self.step_id ].$summary_element.find( '.step_index' ).html( count );
+								}
+
+								$.each( composite.composite_summary_widget_views, function( index, widget_view ) {
+									widget_view.composite_summary_view.view_elements[ self.step_id ].$summary_element.find( '.step_index' ).html( count );
+								} );
+							}
+						},
+
+						update_visibility: function() {
+
+							var view = this;
+
+							composite.console_log( 'debug:views', '\nRendering "' + self.get_title() + '" visibility...' );
+
+							if ( false !== composite.composite_pagination_view ) {
+								if ( this.model.get( 'is_hidden' ) ) {
+									composite.composite_pagination_view.view_elements[ self.step_id ].$pagination_element.hide();
+								} else {
+									composite.composite_pagination_view.view_elements[ self.step_id ].$pagination_element.show();
+								}
+							}
+
+							if ( false !== composite.composite_summary_view ) {
+								if ( this.model.get( 'is_hidden' ) ) {
+									composite.composite_summary_view.view_elements[ self.step_id ].$summary_element.hide();
+								} else {
+									composite.composite_summary_view.view_elements[ self.step_id ].$summary_element.show();
+								}
+							}
+
+							$.each( composite.composite_summary_widget_views, function( index, widget_view ) {
+								if ( view.model.get( 'is_hidden' ) ) {
+									widget_view.composite_summary_view.view_elements[ self.step_id ].$summary_element.hide();
+								} else {
+									widget_view.composite_summary_view.view_elements[ self.step_id ].$summary_element.show();
+								}
+							} );
+						},
+
+						update_views: function() {
+
+							if ( false !== composite.composite_pagination_view ) {
+								composite.composite_pagination_view.render_element_state( self );
+							}
+
+							if ( false !== composite.composite_summary_view ) {
+								composite.composite_summary_view.render_element_state( self );
+							}
+
+							$.each( composite.composite_summary_widget_views, function( index, widget_view ) {
+								widget_view.composite_summary_view.render_element_state( self );
+							} );
+						},
+
+						update_pointers: function() {
+
+							var curr_step     = composite.get_current_step(),
+								next_step_pre = composite.get_next_step(),
+								prev_step_pre = composite.get_previous_step();
+
+							if ( self.step_index === curr_step.step_index + 1 ) {
+
+								// If hidden, find next closest that isn't.
+								if ( self.step_visibility_model.get( 'is_hidden' ) ) {
+
+									$.each( composite.get_steps(), function( step_index, step ) {
+										if ( step_index > self.step_index ) {
+											if ( step.is_review() || false === step.step_visibility_model.get( 'is_hidden' ) ) {
+
+												var next_step_new = step;
+
+												composite.console_log( 'debug:views', '\nChanged next component pointers to "' + step.get_title() + '".' );
+
+												if ( false !== next_step_pre ) {
+													next_step_pre._is_next = false;
+													next_step_pre.$el.removeClass( 'next' );
+												}
+
+												next_step_new._is_next = true;
+												next_step_new.$el.addClass( 'next' );
+
+												return false;
+											}
+										}
+									} );
+
+								// If not hidden, attempt to reset.
+								} else {
+									if ( self.step_index !== next_step_pre.step_index ) {
+
+										composite.console_log( 'debug:views', '\nReset next component pointers to "' + self.get_title() + '".' );
+
+										if ( false !== next_step_pre ) {
+											next_step_pre.$el.removeClass( 'next' );
+											next_step_pre._is_next = false;
+										}
+
+										self.$el.addClass( 'next' );
+										self._is_next = true;
+									}
+								}
+							}
+
+							if ( self.step_index === curr_step.step_index - 1 ) {
+
+								// If hidden, find next closest that isn't.
+								if ( self.step_visibility_model.get( 'is_hidden' ) ) {
+
+									$.each( _.clone( composite.get_steps() ).reverse(), function( index, step ) {
+										if ( step.step_index < self.step_index ) {
+											if ( step.is_review() || false === step.step_visibility_model.get( 'is_hidden' ) ) {
+
+												var prev_step_new = step;
+
+												composite.console_log( 'debug:views', '\nChanged previous component pointers to "' + step.get_title() + '".' );
+
+												if ( false !== prev_step_pre ) {
+													prev_step_pre._is_previous = false;
+													prev_step_pre.$el.removeClass( 'prev' );
+												}
+
+												prev_step_new._is_previous = true;
+												prev_step_new.$el.addClass( 'prev' );
+
+												return false;
+											}
+										}
+									} );
+
+								// If not hidden, attempt to reset.
+								} else {
+									if ( self.step_index !== prev_step_pre.step_index ) {
+
+										composite.console_log( 'debug:views', '\nReset previous component pointers to "' + self.get_title() + '".' );
+
+										if ( false !== prev_step_pre ) {
+											prev_step_pre.$el.removeClass( 'prev' );
+											prev_step_pre._is_previous = false;
+										}
+
+										self.$el.addClass( 'prev' );
+										self._is_previous = true;
+									}
+								}
+							}
+						}
+
+					} );
+
+					var obj = new View( opts );
+					return obj;
+				};
+
+				/*
+				 * Init visibility views.
+				 */
+				$.each( composite.get_steps(), function( index, component ) {
+					component.step_visibility_view = new Step_Visibility_View( component, { el: component.$el, model: component.step_visibility_model } );
+				} );
+
+				/*
+				 * Prevent hidden component selections from being posted.
+				 */
+				composite.composite_add_to_cart_button_view.$el_button.on( 'click', function() {
+
+					$.each( composite.get_components(), function( index, component ) {
+
+						if ( component.step_visibility_model.get( 'is_hidden' ) ) {
+							component.$component_options_select.val( '' );
+						}
+					} );
+				} );
+
+			};
 		}
 
 } ) ( jQuery, window, document );
