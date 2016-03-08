@@ -1,4 +1,3 @@
-/* global wc_composite_params */
 /* global wc_cp_composite_scripts */
 
 ;( function ( $, window, document, undefined ) {
@@ -25,15 +24,6 @@
 			}
 
 		} );
-
-		function isset( el ) {
-
-			if ( typeof( el ) === 'undefined' ) {
-				return false;
-			}
-
-			return true;
-		}
 
 		function WC_CP_Conditional_Components ( composite ) {
 
@@ -335,11 +325,31 @@
 
 							$.each( composite.composite_summary_widget_views, function( index, widget_view ) {
 								if ( view.model.get( 'is_hidden' ) ) {
-									widget_view.composite_summary_view.view_elements[ self.step_id ].$summary_element.hide();
+									if ( composite.is_initialized ) {
+										widget_view.composite_summary_view.view_elements[ self.step_id ].$summary_element.slideUp( 250 );
+									} else {
+										widget_view.composite_summary_view.view_elements[ self.step_id ].$summary_element.hide();
+									}
 								} else {
-									widget_view.composite_summary_view.view_elements[ self.step_id ].$summary_element.show();
+									if ( composite.is_initialized ) {
+										widget_view.composite_summary_view.view_elements[ self.step_id ].$summary_element.slideDown( 250 );
+									} else {
+										widget_view.composite_summary_view.view_elements[ self.step_id ].$summary_element.show();
+									}
 								}
 							} );
+
+							if ( composite.settings.layout !== 'paged' ) {
+								if ( this.model.get( 'is_hidden' ) ) {
+									self.$el.hide();
+								} else {
+									self.$el.show();
+								}
+
+								if ( self.is_component() ) {
+									self.component_title_view.render_navigation_state();
+								}
+							}
 						},
 
 						update_views: function() {

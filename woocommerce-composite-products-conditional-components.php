@@ -2,7 +2,7 @@
 /*
 * Plugin Name: WooCommerce Composite Products - Conditional Components
 * Plugin URI: http://www.woothemes.com/products/composite-products/
-* Description: Adds a custom "Hide Components" Scenario action that can be used to conditionally hide Composite Components. Requires WooCommerce Composite Products v3.1+.
+* Description: Adds a custom "Hide Components" Scenario action that can be used to conditionally hide Composite Components. Requires WooCommerce Composite Products.
 * Version: 1.1.0
 * Author: SomewhereWarm
 * Author URI: http://somewherewarm.net/
@@ -177,7 +177,7 @@ class WC_CP_Scenario_Action_Conditional_Components {
 
 		$layout = $composite->get_composite_layout_style();
 
-		if ( ! empty( $scenario_meta ) && $layout === 'paged' ) {
+		if ( ! empty( $scenario_meta ) ) {
 
 			$hidden_components_settings = array();
 
@@ -195,6 +195,9 @@ class WC_CP_Scenario_Action_Conditional_Components {
 			if ( ! empty( $hidden_components_settings ) ) {
 				$scenario_data[ 'scenario_settings' ][ 'conditional_components' ] = $hidden_components_settings;
 			}
+
+		} else {
+			$scenario_data[ 'scenario_settings' ][ 'conditional_components' ] = array();
 		}
 
 		return $scenario_data;
@@ -219,13 +222,7 @@ class WC_CP_Scenario_Action_Conditional_Components {
 
 		// Save active state
 		if ( ! empty( $scenario_post_data[ 'scenario_actions' ][ 'conditional_components' ][ 'is_active' ] ) ) {
-
 			$scenario_meta[ 'scenario_actions' ][ 'conditional_components' ][ 'is_active' ] = 'yes';
-
-			if ( $layout !== 'paged' ) {
-				$woocommerce_composite_products->admin->add_error( __( 'The "Hide components" Scenario Action is only compatible with the Stepped and Componentized layout options.', 'woocommerce-composite-products-conditional-components' ) );
-			}
-
 		} else {
 			$scenario_meta[ 'scenario_actions' ][ 'conditional_components' ][ 'is_active' ] = 'no';
 		}
