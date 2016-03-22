@@ -80,7 +80,7 @@ class WC_CP_Scenario_Action_Conditional_Components {
 	 */
 	public static function cp_check_admin_notice() {
 
-		echo '<div class="error"><p>' . sprintf( __( 'The installed version of <strong>WooCommerce Composite Products - Conditional Components</strong> requires Composite Products version %s or higher. Please update WooCommerce Composite Products.', 'woocommerce-composite-products-conditional-components' ), self::$req_cp_version ) . '</p></div>';
+		echo '<div class="error"><p>' . sprintf( __( '<strong>WooCommerce Composite Products - Conditional Components</strong> requires Composite Products version %s or higher. Please update <strong>WooCommerce Composite Products</strong>.', 'woocommerce-composite-products-conditional-components' ), self::$req_cp_version ) . '</p></div>';
 	}
 
 	/**
