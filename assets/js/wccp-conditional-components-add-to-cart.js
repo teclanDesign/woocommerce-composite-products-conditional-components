@@ -112,7 +112,7 @@
 						var conditional_components = composite.scenarios.get_scenario_data().scenario_settings.conditional_components;
 
 						// Find if the component is hidden in the active scenarios.
-						if ( active_scenarios.length > 0 ) {
+						if ( active_scenarios.length > 0 && typeof( conditional_components ) !== 'undefined' ) {
 
 							// Set hide status.
 							$.each( conditional_components, function( scenario_id, hidden_components ) {

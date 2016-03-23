@@ -59,9 +59,7 @@ class WC_CP_Scenario_Action_Conditional_Components {
 		add_action( 'admin_enqueue_scripts', __CLASS__ . '::admin_scripts' );
 
 		// Add qty data in scenarios.
-		add_filter( 'woocommerce_composite_initial_scenario_data', __CLASS__ . '::initial_scenario_data', 10, 4 );
-		add_filter( 'woocommerce_composite_validation_scenario_data', __CLASS__ . '::validation_scenario_data', 10, 4 );
-		add_filter( 'woocommerce_composite_component_current_scenario_data', __CLASS__ . '::current_scenario_data', 10, 5 );
+		add_filter( 'woocommerce_composite_scenario_data', __CLASS__ . '::scenario_data', 10, 4 );
 
 		// Add 'Hide Components' action in Scenarios.
 		add_action( 'woocommerce_composite_scenario_admin_actions_html', __CLASS__ . '::actions_config', 15, 4 );
@@ -121,61 +119,15 @@ class WC_CP_Scenario_Action_Conditional_Components {
 	}
 
 	/**
-	 * Add conditional components data in initial scenarios data array.
-	 *
-	 * @param  array                $scenario_data
-	 * @param  array                $composite_data
-	 * @param  array                $scenario_meta
-	 * @param  WC_Product_Composite $composite
-	 * @return array
-	 */
-	public static function initial_scenario_data( $scenario_data, $composite_data, $scenario_meta, $composite ) {
-		return self::scenario_data( $scenario_data, $scenario_meta, $composite );
-	}
-
-	/**
-	 * Add conditional components data in validation scenarios data array.
-	 *
-	 * @param  array  $scenario_data
-	 * @param  array  $composite_data
-	 * @param  array  $scenario_meta
-	 * @param  int    $composite_id
-	 * @return array
-	 */
-	public static function validation_scenario_data( $scenario_data, $composite_data, $scenario_meta, $composite_id ) {
-		return self::scenario_data( $scenario_data, $scenario_meta, $composite_id );
-	}
-
-	/**
-	 * Add conditional components data in component scenarios data array.
-	 *
-	 * @param  array                $scenario_data
-	 * @param  string               $component_id
-	 * @param  array                $current_component_options
-	 * @param  array                $scenario_meta
-	 * @param  WC_Product_Composite $composite
-	 * @return array
-	 */
-	public static function current_scenario_data( $scenario_data, $component_id, $current_component_options, $scenario_meta, $composite ) {
-		return self::scenario_data( $scenario_data, $scenario_meta, $composite );
-	}
-
-	/**
 	 * Add conditional components data in scenarios.
 	 *
 	 * @param  array  $scenario_data
 	 * @param  array  $scenario_meta
+	 * @param  array  $composite_data
 	 * @param  mixed  $composite
 	 * @return array
 	 */
-	public static function scenario_data( $scenario_data, $scenario_meta, $composite ) {
-
-		if ( is_numeric( $composite ) ) {
-			$composite_id = absint( $composite );
-			$composite    = wc_get_product( $composite_id );
-		}
-
-		$layout = $composite->get_composite_layout_style();
+	public static function scenario_data( $scenario_data, $scenario_meta, $composite_data, $composite ) {
 
 		if ( ! empty( $scenario_meta ) ) {
 
@@ -218,7 +170,6 @@ class WC_CP_Scenario_Action_Conditional_Components {
 		global $woocommerce_composite_products;
 
 		$composite = wc_get_product( $composite_id );
-		$layout    = $composite->get_composite_layout_style();
 
 		// Save active state
 		if ( ! empty( $scenario_post_data[ 'scenario_actions' ][ 'conditional_components' ][ 'is_active' ] ) ) {
