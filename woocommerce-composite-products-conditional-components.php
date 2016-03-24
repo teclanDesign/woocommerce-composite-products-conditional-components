@@ -247,7 +247,7 @@ class WC_CP_Scenario_Action_Conditional_Components {
 					<?php echo __( 'Hide components', 'woocommerce-composite-products-conditional-components' ); ?>
 				</label>
 				<input type="checkbox" class="checkbox" <?php echo ( $hide_components === 'yes' ? ' checked="checked"' : '' ); ?> name="bto_scenario_data[<?php echo $id; ?>][scenario_actions][conditional_components][is_active]" <?php echo ( $hide_components === 'yes' ? ' value="1"' : '' ); ?> />
-				<img class="help_tip" data-tip="<?php echo __( 'Hide one or more Components when this Scenario is active.', 'woocommerce-composite-products-conditional-components' ); ?>" src="<?php echo WC()->plugin_url(); ?>/assets/images/help.png" />
+				<?php echo WC_CP_Core_Compatibility::wc_help_tip( __( 'Hide one or more Components when this Scenario is active.', 'woocommerce-composite-products-conditional-components' ) ); ?>
 			</div>
 			<div class="action_components" <?php echo ( $hide_components === 'no' ? ' style="display:none;"' : '' ); ?> >
 				<select id="bto_conditional_components_ids_<?php echo $id; ?>" name="bto_scenario_data[<?php echo $id; ?>][scenario_actions][conditional_components][hidden_components][]" style="width: 75%;" class="<?php echo WC_CP_Core_Compatibility::is_wc_version_gte_2_3() ? 'wc-enhanced-select' : 'chosen_select'; ?> conditional_components_ids" multiple="multiple" data-placeholder="<?php echo __( 'Select components&hellip;', 'woocommerce-composite-products-conditional-components' ); ?>"><?php
