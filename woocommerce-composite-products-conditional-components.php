@@ -3,7 +3,7 @@
 * Plugin Name: WooCommerce Composite Products - Conditional Components
 * Plugin URI: http://www.woothemes.com/products/composite-products/
 * Description: Adds a custom "Hide Components" Scenario action that can be used to conditionally hide Composite Components. Requires WooCommerce Composite Products.
-* Version: 1.1.0
+* Version: 1.1.1
 * Author: SomewhereWarm
 * Author URI: http://somewherewarm.net/
 * Developer: Manos Psychogyiopoulos
@@ -27,7 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class WC_CP_Scenario_Action_Conditional_Components {
 
-	public static $version        = '1.1.0';
+	public static $version        = '1.1.1';
 	public static $req_cp_version = '3.6.0';
 
 	public static function plugin_url() {

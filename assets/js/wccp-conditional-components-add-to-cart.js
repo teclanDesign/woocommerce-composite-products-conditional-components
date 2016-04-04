@@ -369,6 +369,10 @@
 
 					update_pointers: function() {
 
+						if ( composite.settings.layout_variation === 'componentized' ) {
+							return false;
+						}
+
 						var curr_step     = composite.get_current_step(),
 							next_step_pre = composite.get_next_step(),
 							prev_step_pre = composite.get_previous_step();
